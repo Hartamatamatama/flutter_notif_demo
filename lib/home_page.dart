@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
@@ -8,7 +9,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final String _message = "No message received yet, waiting...";
+  String _message = "No message received yet, waiting...";
+
+  @override
+  void initState() {
+    super.initState();
+    // memangil fungsi FCM
+    setupFCM();
+  }
+
+  Future<void> setupFCM() async {
+    print("Setting up Firebase Cloud Messaging...");
+    final messaging = FirebaseMessaging.instance;
+    await messaging.requestPermission();
+    String? token = await messaging.getToken();
+    print("TOKEN SAYA: $token");
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        setState(() {
+          _message =
+              "${message.notification!.title}: ${message.notification!.body}";
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
